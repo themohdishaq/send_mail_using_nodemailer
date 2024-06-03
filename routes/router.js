@@ -1,18 +1,13 @@
+// router.js
+
 const express = require("express");
 const router = new express.Router();
 const nodemailer = require("nodemailer");
 
-
-
-
-// send mail
-router.post("/register",  (req, res) => {
-
-    const { email } = req.body;
-  
+router.post("/register", async (req, res) => {
+    const { email, subject, message } = req.body; // Extract email, subject, and message from request body
 
     try {
-
         const transporter = nodemailer.createTransport({
             service: "gmail",
             auth: {
@@ -24,24 +19,23 @@ router.post("/register",  (req, res) => {
         const mailOptions = {
             from: process.env.EMAIL,
             to: email,
-            subject: "Sending Email With React And Nodejs",
-            html: '<h1>Congratulation</h1> <h1> You successfully sent Email </h2>'
+            subject: subject, // Set subject from request body
+            html: `<h1>${message}</h1>` // Set message from request body
         };
 
         transporter.sendMail(mailOptions, (error, info) => {
             if (error) {
-                console.log("Error" + error)
+                console.log("Error", error);
+                res.status(500).json({ error: "Failed to send email" });
             } else {
-                console.log("Email sent:" + info.response);
-                res.status(201).json({status:201,info})
+                console.log("Email sent:", info.response);
+                res.status(201).json({ status: 201, message: "Email sent successfully" });
             }
-        })
-
+        });
     } catch (error) {
-        console.log("Error" + error);
-        res.status(401).json({status:401,error})
+        console.log("Error", error);
+        res.status(500).json({ error: "Internal server error" });
     }
 });
-
 
 module.exports = router;
